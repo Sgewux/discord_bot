@@ -6,21 +6,21 @@ from bot_utilities.weather_scraper import WeatherScraper
 client = discord.Client()
 bot = commands.Bot(command_prefix='$')
 
-@client.event
+@bot.event
 async def on_ready():
     print(f'We are logged {bot.user}')
 
 
-@client.event
-async def on_message(message):
-    if message.author != bot.user:
-        if message.content.startswith('$sayhi'):
-            await message.channel.send(f'Hi {message.author.mention}! How r u?')
-    else:
-        return None
+#@bot.event
+#async def on_message(message):
+ #   if message.author != bot.user:
+  #      if message.content.startswith('$sayhi'):
+   #         await message.channel.send(f'Hi {message.author.mention}! How r u?')
+    #else:
+     #   return None
 
 
-@client.event
+@bot.event
 async def on_typing(channel, user, when):
     if type(channel) == discord.channel.TextChannel:
         if user.id == channel.guild.owner_id:
