@@ -3,7 +3,7 @@ import dotenv
 import discord
 import asyncio
 from discord.ext import commands
-from bot_utilities import astronomy_picture
+from bot_utilities.nasa_api import NasaApi
 from bot_utilities.weather_scraper import WeatherScraper
 
 dotenv.load_dotenv()
@@ -20,7 +20,6 @@ async def on_typing(channel, user, when):
     if type(channel) == discord.channel.TextChannel:
         if user.id == channel.guild.owner_id:
             await channel.send('Shhh 🤫 The owner is typing right know.')
-            await asyncio.sleep(10)
     else:
         return None
 
@@ -32,6 +31,7 @@ async def help(ctx):
     I'm a Discord bot and i have the following commands:
         -weather: Given a place i will tell you the weather and temperature of that place.
         -APOD: I will send the Astronomy Picture Of the Day.
+        -MRP: I will send a random picture taken by the Curiosity mars rover.
 
         All commands should has as a prefix '$'."""
 
@@ -45,10 +45,20 @@ async def weather(ctx, place):
 
 @bot.command(pass_context=True, name='APOD')
 async def astro_picture(ctx):
-    apod = astronomy_picture.get_astronomy_pic()
+    apod = NasaApi().get_apod()
 
     if apod:
         await ctx.send(f'Description 👨‍🚀:\n {apod[0]}\n {apod[1]}')
+    else:
+        await ctx.send('Something went wrong :(')
+
+
+@bot.command(pass_context=True, name='MRP')
+async def rover_photo(ctx):
+    rover_photo = NasaApi().get_mars_rover_photo()
+
+    if rover_photo:
+        await ctx.send(f'{rover_photo[0]}\nThis photo was taken in: {rover_photo[1]}\nCamera name: {rover_photo[2]}')
     else:
         await ctx.send('Something went wrong :(')
 
