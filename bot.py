@@ -39,7 +39,8 @@ async def help(ctx):
 
 
 @bot.command(pass_context=True)
-async def weather(ctx, place):
+async def weather(ctx, *place):
+    place = ''.join(place)
     await ctx.send(f'Weather in {place} is currently: {WeatherScraper(place).get_temperature_and_weather()}')
 
 
