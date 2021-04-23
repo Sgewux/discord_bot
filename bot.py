@@ -2,6 +2,7 @@ import os
 import dotenv
 import discord
 import asyncio
+import datetime
 from discord.ext import commands
 from bot_utilities.nasa_api import NasaApi
 from bot_utilities.weather_scraper import WeatherScraper
@@ -28,18 +29,20 @@ async def on_typing(channel, user, when):
 async def help(ctx):
     message_to_be_sent = """
     Hi 👋, my name is Diego Norrea 
-    I'm a Discord bot and i have the following commands:
+    I'm a Discord bot 🤖 and i have the following commands:
         -weather: Given a place i will tell you the weather and temperature of that place.
         -APOD: I will send the Astronomy Picture Of the Day.
         -MRP: I will send a random picture taken by the Curiosity mars rover.
+        -HWD: To know how many days you have been on this server.
 
-        All commands should has as a prefix '$'."""
+        All commands should has '$'  as a prefix.
+        The commands are not case sensitive(for me write apod is the same as write APOD)"""
 
     await ctx.message.reply(content=message_to_be_sent)
 
 
-@bot.command(pass_context=True)
-async def weather(ctx, *place):
+@bot.command(pass_context=True, aliases=('weather', 'WEATHER'))
+async def get_weather(ctx, *place):
     place = ''.join(place)
     await ctx.message.reply(content=f'Weather in {place} is currently: {WeatherScraper(place).get_temperature_and_weather()}')
 
@@ -63,6 +66,16 @@ async def rover_photo(ctx):
     else:
         await ctx.message.reply(content='Something went wrong :( \nPlease try again.')
 
+
+@bot.command(pass_context=True, aliases=('HWD', 'hwd'))
+async def time_belonging(ctx):
+    if type(ctx.author) == discord.member.Member:
+        join_date = ctx.author.joined_at
+        current_date = datetime.datetime.now()
+        delta = current_date - join_date
+        await ctx.message.reply(content=f'You\'ve been on this server for {delta.days} days!')
+    else:
+        return None
 
 if __name__ == '__main__':
     bot.run(TOKEN)
