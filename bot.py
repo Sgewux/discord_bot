@@ -35,16 +35,16 @@ async def help(ctx):
 
         All commands should has as a prefix '$'."""
 
-    await ctx.send(message_to_be_sent)
+    await ctx.message.reply(content=message_to_be_sent)
 
 
 @bot.command(pass_context=True)
 async def weather(ctx, *place):
     place = ''.join(place)
-    await ctx.send(f'Weather in {place} is currently: {WeatherScraper(place).get_temperature_and_weather()}')
+    await ctx.message.reply(content=f'Weather in {place} is currently: {WeatherScraper(place).get_temperature_and_weather()}')
 
 
-@bot.command(pass_context=True, name='APOD')
+@bot.command(pass_context=True, aliases=('APOD', 'apod'))
 async def astro_picture(ctx):
     apod = NasaApi().get_apod()
 
@@ -54,14 +54,14 @@ async def astro_picture(ctx):
         await ctx.send('Something went wrong :(')
 
 
-@bot.command(pass_context=True, name='MRP')
+@bot.command(pass_context=True,  aliases=('MRP', 'mrp'))
 async def rover_photo(ctx):
     rover_photo = NasaApi().get_mars_rover_photo()
 
-    if rover_photo:
-        await ctx.send(f'{rover_photo[0]}\nThis photo was taken in: {rover_photo[1]}\nCamera name: {rover_photo[2]}')
+    if rover_photo: 
+        await ctx.message.reply(content=f'{rover_photo[0]}\nThis photo was taken in: {rover_photo[1]}\nCamera name: {rover_photo[2]}') 
     else:
-        await ctx.send('Something went wrong :(')
+        await ctx.message.reply(content='Something went wrong :( \nPlease try again.')
 
 
 if __name__ == '__main__':

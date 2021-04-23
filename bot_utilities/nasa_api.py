@@ -48,14 +48,3 @@ class NasaApi(object):
             return None
 
     
-
-
-    
-        
-
-
-
-
-
-
-

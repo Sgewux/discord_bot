@@ -26,8 +26,4 @@ class WeatherScraper:
 
                     return 'Something went wrong :('
 
-if __name__ == '__main__':
-    w = WeatherScraper('ibague')
-    print(w.get_temperature_and_weather())
-
             
