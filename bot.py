@@ -1,4 +1,5 @@
 import os
+import re
 import dotenv
 import discord
 import asyncio
@@ -33,6 +34,7 @@ async def help(ctx):
         -weather: Given a place i will tell you the weather and temperature of that place.
         -APOD: I will send the Astronomy Picture Of the Day.
         -MRP: I will send a random picture taken by the Curiosity mars rover.
+        -MRPD: I will send a photo taken by the Curiosity mars rover in date with the year month day format given by you(use blank spaces to split the values). 
         -HWD: To know how many days you have been on this server.
 
         All commands should has '$'  as a prefix.
@@ -76,6 +78,20 @@ async def time_belonging(ctx):
         await ctx.message.reply(content=f'You\'ve been on this server for {delta.days} days!')
     else:
         return None
+
+
+@bot.command(pass_context=True, aliases=('MRPD', 'mrpd'))
+async def rover_photo_by_date(ctx, *args):
+    date = '-'.join(args)
+    print(args)
+    date_regex = re.compile('\d{4}-\d{1,2}-\d{1,2}')
+    
+    if date_regex.search(date):
+        photo_url = NasaApi().get_rover_photo_by_date(date)
+        await ctx.message.reply(content=photo_url)
+    else:
+        await ctx.message.reply(content='It is not a date, i\'m not dumb 😑')
+
 
 if __name__ == '__main__':
     bot.run(TOKEN)

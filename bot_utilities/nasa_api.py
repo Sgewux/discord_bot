@@ -11,7 +11,7 @@ class NasaApi(object):
        self._api_key = os.getenv('NASA_API_TOKEN') 
        self._apod_url = f'https://api.nasa.gov/planetary/apod?api_key={self._api_key}'
        self._mars_photos_url = f'https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol={random.randint(1, 1000)}&page=1&api_key={self._api_key}'
-
+       self._mars_photo_by_date_url = 'https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?earth_date={0}&api_key={1}'
 
     def get_apod(self):
         url = self._apod_url
@@ -46,5 +46,25 @@ class NasaApi(object):
         
         except:
             return None
+
+
+    def get_rover_photo_by_date(self, date):
+        try:
+            url = self._mars_photo_by_date_url.format(date, self._api_key)
+            response = requests.get(url)
+            data = json.loads(response.text)
+
+            list_of_photos = data['photos']
+            photo = random.choice(list_of_photos)
+            img_src = photo['img_src']
+
+            return img_src
+        
+        except IndexError:
+            return 'Sorry, i couldn\'t find a phodo taken that day :('
+
+        except:
+            return 'Something went wrong :('
+        
 
     
