@@ -31,11 +31,19 @@ async def help(ctx):
     message_to_be_sent = """
     Hi 👋, my name is Diego Norrea 
     I'm a Discord bot 🤖 and i have the following commands:
-        -weather: Given a place i will tell you the weather and temperature of that place.
-        -APOD: I will send the Astronomy Picture Of the Day.
-        -MRP: I will send a random picture taken by the Curiosity mars rover.
-        -MRPD: I will send a photo taken by the Curiosity mars rover in date with the year month day format given by you(use blank spaces to split the values). 
-        -HWD: To know how many days you have been on this server.
+        General commands:
+            -weather: Given a place i will tell you the weather and temperature of that place.
+            -HMD: To know how many days you have been on this server.
+        Space commands:
+            -APOD: I will send the Astronomy Picture Of the Day.
+            -MRP: I will send a random picture taken by the Curiosity mars rover.
+            -MRPD: I will send a photo taken by the Curiosity mars rover in date with the year month day format given by you(use blank spaces to split the values).
+        Crypto commands:
+            -cprice: Given a cryptocurrency name (bitcoin for example) and a normal currency (usd for example) i will send you the currentcryptocurrency price on that currency.
+            -CTC: Given a normal currency name, cryptocurrency name and an amount i will Convert To Crypto that amount.
+            -CFC: Given a cryptocurrency name, normal currency name and an amount i will Convert From Crypto that amount.
+
+            Use the full name to reffer to a crypto currency (type 'bitcoin' instead of 'btc') and use the abreviation to reffer to normal currencies (type 'usd' insted of 'United States Dollar')
 
         All commands should has '$'  as a prefix.
         The commands are not case sensitive(for me write apod is the same as write APOD)"""
@@ -69,7 +77,7 @@ async def rover_photo(ctx):
         await ctx.message.reply(content='Something went wrong :( \nPlease try again.')
 
 
-@bot.command(pass_context=True, aliases=('HWD', 'hwd'))
+@bot.command(pass_context=True, aliases=('HMD', 'hmd'))
 async def time_belonging(ctx):
     if type(ctx.author) == discord.member.Member:
         join_date = ctx.author.joined_at
