@@ -6,6 +6,7 @@ import asyncio
 import datetime
 from discord.ext import commands
 from bot_utilities.nasa_api import NasaApi
+from bot_utilities.crypto_commands import CryptoCommands
 from bot_utilities.weather_scraper import WeatherScraper
 
 dotenv.load_dotenv()
@@ -100,6 +101,32 @@ async def rover_photo_by_date(ctx, *args):
     else:
         await ctx.message.reply(content='It is not a date, i\'m not dumb 😑')
 
+
+@bot.command(pass_context=True, aliases=('cprice', 'CPRICE'))
+async def get_price(ctx, crypto_name, currency_name):
+    currency_name = currency_name.lower()
+    crypto_name = crypto_name.lower()
+    price = CryptoCommands().get_crypto_price(crypto_name, currency_name)
+
+    await ctx.message.reply(content=price)
+
+
+@bot.command(pass_context=True, aliases=('ctc', 'CTC'))
+async def conv_to_crypto(ctx, amount, currency_name, crypto_name):
+    currency_name = currency_name.lower()
+    crypto_name = crypto_name.lower()
+    convertion = CryptoCommands.convert_to_crypto(currency_name, crypto_name, float(amount))
+
+    await ctx.message.reply(content=convertion)
+
+
+@bot.command(pass_context=True, aliases=('cfc', 'CFC'))
+async def conv_from_crypto(ctx, amount, crypto_name, currency_name):
+    currency_name = currency_name.lower()
+    crypto_name = crypto_name.lower()
+    convertion = CryptoCommands.convert_from_crypto(crypto_name, currency_name, float(amount))
+
+    await ctx.message.reply(content=convertion)
 
 if __name__ == '__main__':
     bot.run(TOKEN)
