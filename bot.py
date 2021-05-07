@@ -11,7 +11,8 @@ from bot_utilities.weather_scraper import WeatherScraper
 
 dotenv.load_dotenv()
 TOKEN = os.getenv('DISCORD_API_TOKEN')
-bot = commands.Bot(command_prefix='$', help_command=None)
+intents = discord.Intents().all()
+bot = commands.Bot(command_prefix='$', help_command=None, intents=intents)
 
 @bot.event
 async def on_ready():
@@ -36,16 +37,18 @@ async def help(ctx):
         General commands 🌎:
             -weather: Given a place i will tell you the weather and temperature of that place.
             -HMD: To know how many days you have been on this server.
+            -sayto: Given a quoted message and a user name i will send that message to that user throug dm chat
+            for example ("Hi, how is it going?" juanca galindo). I will delete your message imediatly and send the dm to the target user.
 
         Space commands 🚀:
             -APOD: I will send the Astronomy Picture Of the Day.
             -MRP: I will send a random picture taken by the Curiosity mars rover.
-            -MRPD: I will send a photo taken by the Curiosity mars rover in date with the year month day format given by you
-            (use blank spaces to split the values).
+            -MRPD: I will send a photo taken by the Curiosity mars rover in date 
+            with the year month day format given by you (use blank spaces to split the values).
 
-        Crypto commands 💲:
-            -cprice: Given a cryptocurrency name (bitcoin for example) and a normal currency (usd for example) i will send you the current
-            price of that currency.
+        Crypto commands 💱:
+            -cprice: Given a cryptocurrency name (bitcoin for example) and a normal currency (usd for example) 
+            i will send you the current price of that currency.
             -CTC: Given a normal currency name, cryptocurrency name and an amount i will Convert To Crypto that amount.
             -CFC: Given a cryptocurrency name, normal currency name and an amount i will Convert From Crypto that amount.
             Use the full name to reffer to a crypto currency (type 'bitcoin' instead of 'btc') and use the abreviation to reffer to normal
@@ -92,6 +95,36 @@ async def time_belonging(ctx):
         await ctx.message.reply(content=f'You\'ve been on this server for {delta.days} days!')
     else:
         return None
+
+
+@bot.command(pass_context=True, aliases=('sayto', 'SAYTO'))
+async def say_to(ctx, *args):
+    if ctx.guild:
+        if len(args) > 1:
+            author = ctx.author.name
+            guild_name = ctx.guild.name
+            message_to_send = args[0]
+            user_to_send = ' '.join(args[1:])
+            member = ctx.guild.get_member_named(user_to_send)
+
+            if not member:
+                await ctx.message.reply(content='That user does not exist or is not a server\'s member.')
+            
+            elif member.bot:
+                await ctx.message.reply(content='That user is a bot. I won\'t mess with my parthners 😇.')
+
+            elif member == ctx.author:
+                await ctx.message.reply(content='You can\'t use this command with yourself.')
+
+            else:
+                await ctx.message.delete()
+                await ctx.send(f'{ctx.author.mention} I have sent the message, will be our secret 🤭.')
+                dm_channel = await member.create_dm()
+                await dm_channel.send(content=f'Hi, {author} from {guild_name} asked me to tell you "{message_to_send}" 🤐')
+        else:
+            await ctx.message.reply(content='You must especify a message and a user to send that message.')
+    else:
+        await ctx.message.reply(content='This command only works on servers.')
 
 
 @bot.command(pass_context=True, aliases=('MRPD', 'mrpd'))
