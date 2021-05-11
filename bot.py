@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import dotenv
 import discord
 import asyncio
@@ -66,6 +67,7 @@ async def get_weather(ctx, *place):
     await ctx.message.reply(content=f'Weather in {place} is currently: {WeatherScraper(place).get_temperature_and_weather()}')
 
 
+
 @bot.command(pass_context=True, aliases=('APOD', 'apod'))
 async def astro_picture(ctx):
     apod = NasaApi().get_apod()
@@ -125,6 +127,75 @@ async def say_to(ctx, *args):
             await ctx.message.reply(content='You must especify a message and a user to send that message.')
     else:
         await ctx.message.reply(content='This command only works on servers.')
+
+
+@bot.command(pass_context=True, aliases=('bday',))
+async def set_bday(ctx, month: int, day: int):
+    
+    if ctx.guild:
+
+        guild_id = str(ctx.guild.id)
+        user_id = str(ctx.author.id)
+    
+        with open('./data/birth_days.json', 'r') as f:
+            bdays_dict = json.load(f)
+
+        try:
+            server_bdays = bdays_dict[guild_id]
+
+            if month <= 12:
+                if month in (1, 3, 5, 7, 8, 10, 12) and day <= 31:
+                
+                    server_bdays[user_id] = (month, day)
+            
+                elif month == 2 and day <= 28:
+                
+                    server_bdays[user_id] = (month, day) 
+
+                elif month in (4, 6, 9, 11) and day <= 30:
+                
+                    server_bdays[user_id] = (month, day)
+
+                else:
+
+                    await ctx.message.reply(content='Please enter a valid date.')
+                    return None
+            else:
+                await ctx.message.reply(content='Please enter a valid date.')
+                return None
+
+        except KeyError:
+            bdays_dict[guild_id] = {}
+            server_bdays = bdays_dict[guild_id]
+
+            if month <= 12:
+
+                if month in (1, 3, 5, 7, 8, 10, 12) and day <= 31:
+
+                    server_bdays[user_id] = (month, day)
+
+                elif month == 2 and day <= 28:
+
+                    server_bdays[user_id] = (month, day)
+
+                elif month in (4, 6, 9, 11) and day <= 30:
+
+                    server_bdays[user_id] = (month, day)
+
+                else:
+                    await ctx.message.reply(content='Please enter a valid date.')
+                    return None
+        
+            else:
+                await ctx.message.reply(content='Please enter a valid date.')
+                return None
+
+        with open('./data/birth_days.json', 'w') as f:
+            json.dump(bdays_dict, f)
+
+    else:
+        await ctx.message.reply(content='This command oly works on servers.')
+
 
 
 @bot.command(pass_context=True, aliases=('MRPD', 'mrpd'))
