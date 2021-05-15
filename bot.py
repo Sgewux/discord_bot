@@ -197,6 +197,61 @@ async def set_bday(ctx, month: int, day: int):
         await ctx.message.reply(content='This command oly works on servers.')
 
 
+@bot.command(pass_context=True, aliases=('nbdays',))
+async def nex_bdays(ctx):
+    with open('./data/birth_days.json', 'r') as f:
+        bdays_dict = json.load(f)
+
+    server_data = bdays_dict.get(str(ctx.guild.id), None)
+
+    if server_data:
+        today_date = datetime.date.today()
+        today_day = today_date.day
+        today_month = today_date.month
+        
+        today_bdays = []
+        week_bdays = []
+        month_bdays = []
+
+        for k, v in server_data.items():
+            #if the bday is today
+            if v[0] == today_month and v[1] == today_day:
+                mention = ctx.guild.get_member(int(k)).mention
+                today_bdays.append(mention)
+
+            #if the bday is in the next 7 days
+            elif (v[1] - today_day) > 0 and (v[1] - today_day) <= 7  and v[0] == today_month:
+                mention = ctx.guild.get_member(int(k)).mention
+                week_bdays.append(mention)
+            
+            #if the bdat is in the current month
+            elif v[0] == today_month and today_day < v[1]:
+                mention = ctx.guild.get_member(int(k)).mention
+                month_bdays.append(mention)
+        
+        message_to_send = ''
+
+        if today_bdays:
+            message_to_send += '\n**Today:**\n'
+            message_to_send += '\n'.join(today_bdays)
+        if week_bdays:
+            message_to_send += '\n**In the next 7 days:**\n'
+            message_to_send += '\n'.join(week_bdays)
+        if month_bdays:
+            message_to_send += '\n**In the current month:**\n'
+            message_to_send += '\n'.join(month_bdays)
+
+
+        if message_to_send:
+            await ctx.send(message_to_send)
+        else:
+            await ctx.send('There is not soon birhtdays.')
+        
+
+    else:
+        ctx.send('This server does not have stored birhtdays use "$bday" to store your birthday.')
+
+
 
 @bot.command(pass_context=True, aliases=('MRPD', 'mrpd'))
 async def rover_photo_by_date(ctx, *args):
