@@ -22,12 +22,64 @@ async def on_ready():
 
 
 @bot.event
-async def on_typing(channel, user, when):
-    if type(channel) == discord.channel.TextChannel:
-        if user.id == channel.guild.owner_id:
-            await channel.send('Shhh 🤫 The owner is typing right know.')
+async def on_member_join(member):
+    print('join')
+    guild = bot.get_guild(member.guild.id)
+    user_id = member.id
+    user_mention = member.mention
+    welcomes_channel = None
+    print(guild.text_channels)
+    for channel in guild.text_channels:
+        if 'welcome' in channel.name:
+            welcomes_channel = channel
+
+    if welcomes_channel:
+        print('channel')
+        with open('./data/members_who_left.json', 'r') as f:
+            members_who_left = json.load(f)
+        
+        server_data = members_who_left.get(str(guild.id), None)
+
+        if server_data:
+            if user_id in server_data:
+                await welcomes_channel.send(f'Welcome back {user_mention}! I hope you won\'t be planning to leave the server this time 🤨.')
+            else:
+                print('no user')
+                await welcomes_channel.send(f'Welcome to this server {user_mention}! I hope you have a good time here 😄.')
+        else:
+            print('nodata')
+            await welcomes_channel.send(f'Welcome to this server {user_mention}! I hope you have a good time here 😄.')
+
+
+@bot.event
+async def on_member_remove(member):
+    guild = bot.get_guild(member.guild.id)
+    user_id = member.id
+
+    with open('./data/members_who_left.json', 'r') as f:
+        members_who_left = json.load(f)
+
+    server_data = members_who_left.get(str(guild.id), None)
+
+    if not server_data:
+        server_data = [user_id]
     else:
-        return None
+        if user_id not in server_data:
+            server_data.append(user_id)
+    
+    members_who_left[str(guild.id)] = server_data
+
+    with open('./data/members_who_left.json', 'w') as f:
+        json.dump(members_who_left, f)
+
+        
+#@bot.event
+#async def on_typing(channel, user, when):
+ #   if type(channel) == discord.channel.TextChannel:
+  #      if user.id == channel.guild.owner_id:
+   #         await channel.send('Shhh 🤫 The owner is typing right know.')
+    #else:
+     #   return None
 
 
 
@@ -199,7 +251,6 @@ async def next_bdays(ctx):
             server_data = bdays_dict.get(str(ctx.guild.id), None)
 
             if server_data:
-                bdays_dict_copy = copy.deepcopy(bdays_dict)
                 server_data_copy = copy.deepcopy(server_data)
                 today_date = datetime.date.today()
                 today_day = today_date.day
@@ -246,13 +297,13 @@ async def next_bdays(ctx):
                 if message_to_send:
                     await ctx.send(message_to_send)
                 else:
-                    await ctx.send('There is not soon birhtdays.')
+                    await ctx.send('There are no birthdays soon.')
 
-            #If the dict has changed, it will happen if someome who stored his bday has left the server and his data is still there.       
-                bdays_dict_copy[str(ctx.guild.id)] = server_data_copy
-                if bdays_dict != bdays_dict_copy:
+                #If the dict has changed, it will happen if someome who stored his bday has left the server and his data is still there.  
+                if server_data_copy != server_data:
+                    bdays_dict[str(ctx.guild.id)] = server_data_copy
                     with open('./data/birth_days.json', 'w') as f:
-                        json.dump(bdays_dict_copy, f)
+                        json.dump(bdays_dict, f)
                 
 
             else:
