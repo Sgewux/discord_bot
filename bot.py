@@ -90,30 +90,25 @@ async def help(ctx):
     Hi 👋, my name is Diego Norrea 
     I'm a Discord bot 🤖 and i have the following commands:
 
-        General commands 🌎:
-            -weather: Given a place i will tell you the weather and temperature of that place.
-            -HMD: To know how many days you have been on this server.
-            -sayto: Given a quoted message and a user name i will send that message to that user throug dm chat.
-            For example ("Hi, how is it going?" juanca galindo). I will delete your message imediatly and send the dm to the target user.
-            -set-bday: To set your birthday use month day syntax using blank spaces to split values. For example ("06 23")
-            -next-bdays: I will show the upcoming server's birthdays (today, next 7 days, current month).
+    **General commands 🌎:**
+    **-weather:** Given a place i will tell you the weather and temperature of that place.
+    **-HMD:** To know how many days you have been on this server.
+    **-sayto:** Given a quoted message and a user name i will send that message to that user throug dm chat. For example ("Hi, how is it going?" juanca galindo). I will delete your message imediatly and send the dm to the target user.
+    **-set-bday:** To set your birthday use month day syntax using blank spaces to split values. For example ("06 23")
+    **-next-bdays:** I will show the upcoming server's birthdays (today, next 7 days, current month).
 
-        Space commands 🚀:
-            -APOD: I will send the Astronomy Picture Of the Day.
-            -MRP: I will send a random picture taken by the Curiosity mars rover.
-            -MRPD: I will send a photo taken by the Curiosity mars rover in date 
-            with the year month day format given by you (use blank spaces to split the values).
+    **Space commands 🚀:**
+    **-APOD:** I will send the Astronomy Picture Of the Day.
+    **-MRP:** I will send a random picture taken by the Curiosity mars rover.
+    **-MRPD:** I will send a photo taken by the Curiosity mars rover in date with the year month day format given by you (use blank spaces to split the values).
 
-        Crypto commands 💱:
-            -cprice: Given a cryptocurrency name (bitcoin for example) and a normal currency (usd for example) 
-            i will send you the current price of that currency.
-            -CTC: Given a normal currency name, cryptocurrency name and an amount i will Convert To Crypto that amount.
-            -CFC: Given a cryptocurrency name, normal currency name and an amount i will Convert From Crypto that amount.
-            Use the full name to reffer to a crypto currency (type 'bitcoin' instead of 'btc') and use the abreviation to reffer to normal
-            currencies (type 'usd' insted of 'United States Dollar')
-
-        All commands should has '$'  as a prefix.
-        The commands are not case sensitive(for me write apod is the same as write APOD)"""
+    **Crypto commands 💱:**
+        **-cprice:** Given a cryptocurrency name (bitcoin for example) and a normal currency (usd for example) i will send you the current price of that currency.
+        **-CTC:** Given a normal currency name, cryptocurrency name and an amount i will Convert To Crypto that amount.
+        **-CFC:** Given a cryptocurrency name, normal currency name and an amount i will Convert From Crypto that amount. Use the full name to reffer to a crypto currency (type 'bitcoin' instead of 'btc') and use the abreviation to reffer to normal currencies (type 'usd' insted of 'United States Dollar')
+        
+    All commands should has '$'  as a prefix.
+    The commands are not case sensitive(for me write apod is the same as write APOD)"""
 
     await ctx.message.reply(content=message_to_be_sent)
 
@@ -381,5 +376,18 @@ async def conv_from_crypto(ctx, amount: float, crypto_name, currency_name):
     await ctx.message.reply(content=convertion)
 
 
+@bot.command(pass_context=True, aliases=('ghp', 'GHP'))
+async def get_h_price(ctx, *args):
+    date = '_'.join(args)
+    date_regex = re.compile('\d{4}-\d{2}-\d{2}')
+
+    if date_regex.search(date):
+        price = CryptoCommands().get_historical_price(date)
+        await ctx.message.reply(content=price)
+    else:
+        await ctx.message.reply(content='It is not a date, i\'m not dumb 😑')
+
+
 if __name__ == '__main__':
     bot.run(TOKEN)
+
