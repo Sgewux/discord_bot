@@ -23,18 +23,15 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
-    print('join')
     guild = bot.get_guild(member.guild.id)
     user_id = member.id
     user_mention = member.mention
     welcomes_channel = None
-    print(guild.text_channels)
     for channel in guild.text_channels:
         if 'welcome' in channel.name:
             welcomes_channel = channel
 
     if welcomes_channel:
-        print('channel')
         with open('./data/members_who_left.json', 'r') as f:
             members_who_left = json.load(f)
         
@@ -44,10 +41,8 @@ async def on_member_join(member):
             if user_id in server_data:
                 await welcomes_channel.send(f'Welcome back {user_mention}! I hope you won\'t be planning to leave the server this time 🤨.')
             else:
-                print('no user')
                 await welcomes_channel.send(f'Welcome to this server {user_mention}! I hope you have a good time here 😄.')
         else:
-            print('nodata')
             await welcomes_channel.send(f'Welcome to this server {user_mention}! I hope you have a good time here 😄.')
 
 
@@ -177,7 +172,7 @@ async def set_bday(ctx, month: int, day: int):
                 server_bdays = bdays_dict[guild_id]
 
                 if month <= 12:
-                    if month in (1, 3, 5, 7, 8, 10, 12) and day <= 31:
+                    if month in {1, 3, 5, 7, 8, 10, 12} and day <= 31:
                     
                         server_bdays[user_id] = (month, day)
                 
@@ -185,7 +180,7 @@ async def set_bday(ctx, month: int, day: int):
                     
                         server_bdays[user_id] = (month, day) 
 
-                    elif month in (4, 6, 9, 11) and day <= 30:
+                    elif month in {4, 6, 9, 11} and day <= 30:
                     
                         server_bdays[user_id] = (month, day)
 
@@ -203,7 +198,7 @@ async def set_bday(ctx, month: int, day: int):
 
                 if month <= 12:
 
-                    if month in (1, 3, 5, 7, 8, 10, 12) and day <= 31:
+                    if month in {1, 3, 5, 7, 8, 10, 12} and day <= 31:
 
                         server_bdays[user_id] = (month, day)
 
@@ -211,7 +206,7 @@ async def set_bday(ctx, month: int, day: int):
 
                         server_bdays[user_id] = (month, day)
 
-                    elif month in (4, 6, 9, 11) and day <= 30:
+                    elif month in {4, 6, 9, 11} and day <= 30:
 
                         server_bdays[user_id] = (month, day)
 
@@ -378,7 +373,7 @@ async def conv_from_crypto(ctx, amount: float, crypto_name, currency_name):
 
 @bot.command(pass_context=True, aliases=('ghp', 'GHP'))
 async def get_h_price(ctx, *args):
-    date = '_'.join(args)
+    date = '-'.join(args)
     date_regex = re.compile('\d{4}-\d{2}-\d{2}')
 
     if date_regex.search(date):
