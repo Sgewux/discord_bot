@@ -8,6 +8,7 @@ import asyncio
 import datetime
 from discord.ext import commands
 from bot_utilities.nasa_api import NasaApi
+from bot_utilities.checks import CustomChecks
 from bot_utilities.crypto_commands import CryptoCommands
 from bot_utilities.weather_scraper import WeatherScraper
 
@@ -126,185 +127,160 @@ async def time_belonging(ctx):
 
 
 @bot.command(pass_context=True, aliases=('sayto', 'SAYTO'))
+@commands.check(CustomChecks.is_guild)
 async def say_to(ctx, *args):
-    if ctx.guild:
-        if len(args) > 1:
-            author = ctx.author.name
-            guild_name = ctx.guild.name
-            message_to_send = args[0]
-            user_to_send = ' '.join(args[1:])
-            member = ctx.guild.get_member_named(user_to_send)
+    if len(args) > 1:
+        author = ctx.author.name
+        guild_name = ctx.guild.name
+        message_to_send = args[0]
+        user_to_send = ' '.join(args[1:])
+        member = ctx.guild.get_member_named(user_to_send)
 
-            if not member:
-                await ctx.message.reply(content='That user does not exist or is not a server\'s member.')
+        if not member:
+            await ctx.message.reply(content='That user does not exist or is not a server\'s member.')
             
-            elif member.bot:
-                await ctx.message.reply(content='That user is a bot. I won\'t mess with my parthners 😇.')
+        elif member.bot:
+            await ctx.message.reply(content='That user is a bot. I won\'t mess with my parthners 😇.')
 
-            elif member == ctx.author:
-                await ctx.message.reply(content='You can\'t use this command with yourself.')
+        elif member == ctx.author:
+            await ctx.message.reply(content='You can\'t use this command with yourself.')
 
-            else:
-                await ctx.message.delete()
-                await ctx.send(f'{ctx.author.mention} I have sent the message, will be our secret 🤭.')
-                dm_channel = await member.create_dm()
-                await dm_channel.send(content=f'Hi, **{author}** from **{guild_name}** asked me to tell you **"{message_to_send}"** 🤐')
         else:
-            await ctx.message.reply(content='You must especify a message and a user to send that message.')
+            await ctx.message.delete()
+            await ctx.send(f'{ctx.author.mention} I have sent the message, will be our secret 🤭.')
+            dm_channel = await member.create_dm()
+            await dm_channel.send(content=f'Hi, **{author}** from **{guild_name}** asked me to tell you **"{message_to_send}"** 🤐')
     else:
-        await ctx.message.reply(content='This command only works on servers.')
+        await ctx.message.reply(content='You must especify a message and a user to send that message.')
+
+
+@say_to.error
+async def say_to_error_handler(ctx, error):
+    """This function is for handling the errors wich will be raised if the $sayto command is not used propery.
+    """
+    await ctx.message.repy(content=str(error))
 
 
 @bot.command(pass_context=True, aliases=('set-bday', 'SET-BDAY'))
+@commands.check(CustomChecks.is_guild)
+@commands.check(CustomChecks.is_bdays_channel)
 async def set_bday(ctx, month: int, day: int):
-    
-    if ctx.guild:
 
-        if 'birthdays' in ctx.message.channel.name:
+    guild_id = str(ctx.guild.id)
+    user_id = str(ctx.author.id)
 
-            guild_id = str(ctx.guild.id)
-            user_id = str(ctx.author.id)
+    with open('./data/birth_days.json', 'r') as f:
+        bdays_dict = json.load(f)
+
+    try:
+        server_bdays = bdays_dict[guild_id]
+
+        if CustomChecks.is_valid_date(month, day):
+            server_bdays[user_id] = (month, day)
         
-            with open('./data/birth_days.json', 'r') as f:
-                bdays_dict = json.load(f)
+        else:
+            await ctx.message.reply(content="Please enter a valid date.")
+            return None
 
-            try:
-                server_bdays = bdays_dict[guild_id]
+    except KeyError:
+        bdays_dict[guild_id] = {}
+        server_bdays = bdays_dict[guild_id]
 
-                if month <= 12:
-                    if month in {1, 3, 5, 7, 8, 10, 12} and day <= 31:
-                    
-                        server_bdays[user_id] = (month, day)
-                
-                    elif month == 2 and day <= 28:
-                    
-                        server_bdays[user_id] = (month, day) 
-
-                    elif month in {4, 6, 9, 11} and day <= 30:
-                    
-                        server_bdays[user_id] = (month, day)
-
-                    else:
-
-                        await ctx.message.reply(content='Please enter a valid date.')
-                        return None
-                else:
-                    await ctx.message.reply(content='Please enter a valid date.')
-                    return None
-
-            except KeyError:
-                bdays_dict[guild_id] = {}
-                server_bdays = bdays_dict[guild_id]
-
-                if month <= 12:
-
-                    if month in {1, 3, 5, 7, 8, 10, 12} and day <= 31:
-
-                        server_bdays[user_id] = (month, day)
-
-                    elif month == 2 and day <= 28:
-
-                        server_bdays[user_id] = (month, day)
-
-                    elif month in {4, 6, 9, 11} and day <= 30:
-
-                        server_bdays[user_id] = (month, day)
-
-                    else:
-                        await ctx.message.reply(content='Please enter a valid date.')
-                        return None
-            
-                else:
-                    await ctx.message.reply(content='Please enter a valid date.')
-                    return None
-
-            with open('./data/birth_days.json', 'w') as f:
-                json.dump(bdays_dict, f)
+        if CustomChecks.is_valid_date(month, day):
+            server_bdays[user_id] = (month, day)
 
         else:
-            await ctx.send('You have to use this command in a channel named "birthdays" (with some emojis if you want 😉). Just to be tidy.')
+            await ctx.message.reply(content="Please enter a valid date.")
+            return None
 
-    else:
-        await ctx.message.reply(content='This command oly works on servers.')
+    with open('./data/birth_days.json', 'w') as f:
+        json.dump(bdays_dict, f)
+
+    await ctx.message.reply(content="Birhtday saved 😉.")
+
+
+@set_bday.error
+async def set_bday_error_handler(ctx, error):
+    """This function is for handling the errors wich be raised if the $set-bday command is not used properly.
+    """
+    await ctx.message.reply(content= str(error))
 
 
 @bot.command(pass_context=True, aliases=('next-bdays', 'NEXT-BDAYS'))
+@commands.check(CustomChecks.is_guild)
+@commands.check(CustomChecks.is_bdays_channel)
 async def next_bdays(ctx):
 
-    if ctx.guild:
+    with open('./data/birth_days.json', 'r') as f:
+        bdays_dict = json.load(f)
 
-        if 'birthdays' in ctx.message.channel.name:
+    server_data = bdays_dict.get(str(ctx.guild.id), None)
 
-            with open('./data/birth_days.json', 'r') as f:
-                bdays_dict = json.load(f)
+    if server_data:
+        server_data_copy = copy.deepcopy(server_data)
+        today_date = datetime.date.today()
+        today_day = today_date.day
+        today_month = today_date.month
+        
+        today_bdays = []
+        week_bdays = []
+        month_bdays = []
 
-            server_data = bdays_dict.get(str(ctx.guild.id), None)
+        for k, v in server_data.items():
+            try:
+            #if the bday is today
+                if v[0] == today_month and v[1] == today_day:
+                    mention = ctx.guild.get_member(int(k)).mention
+                    today_bdays.append(mention)
 
-            if server_data:
-                server_data_copy = copy.deepcopy(server_data)
-                today_date = datetime.date.today()
-                today_day = today_date.day
-                today_month = today_date.month
+                #if the bday is in the next 7 days
+                elif (v[1] - today_day) > 0 and (v[1] - today_day) <= 7  and v[0] == today_month:
+                    mention = ctx.guild.get_member(int(k)).mention
+                    week_bdays.append(mention)
                 
-                today_bdays = []
-                week_bdays = []
-                month_bdays = []
+                #if the bdat is in the current month
+                elif v[0] == today_month and today_day < v[1]:
+                    mention = ctx.guild.get_member(int(k)).mention
+                    month_bdays.append(mention)
 
-                for k, v in server_data.items():
-                    try:
-                    #if the bday is today
-                        if v[0] == today_month and v[1] == today_day:
-                            mention = ctx.guild.get_member(int(k)).mention
-                            today_bdays.append(mention)
+            except AttributeError:
+                del server_data_copy[k]
+                continue
+        
+        message_to_send = ''
 
-                        #if the bday is in the next 7 days
-                        elif (v[1] - today_day) > 0 and (v[1] - today_day) <= 7  and v[0] == today_month:
-                            mention = ctx.guild.get_member(int(k)).mention
-                            week_bdays.append(mention)
-                        
-                        #if the bdat is in the current month
-                        elif v[0] == today_month and today_day < v[1]:
-                            mention = ctx.guild.get_member(int(k)).mention
-                            month_bdays.append(mention)
-
-                    except AttributeError:
-                        del server_data_copy[k]
-                        continue
-                
-                message_to_send = ''
-
-                if today_bdays:
-                    message_to_send += '\n**Today:**\n'
-                    message_to_send += '\n'.join(today_bdays)
-                if week_bdays:
-                    message_to_send += '\n**In the next 7 days:**\n'
-                    message_to_send += '\n'.join(week_bdays)
-                if month_bdays:
-                    message_to_send += '\n**In the current month:**\n'
-                    message_to_send += '\n'.join(month_bdays)
+        if today_bdays:
+            message_to_send += '\n**Today:**\n'
+            message_to_send += '\n'.join(today_bdays)
+        if week_bdays:
+            message_to_send += '\n**In the next 7 days:**\n'
+            message_to_send += '\n'.join(week_bdays)
+        if month_bdays:
+            message_to_send += '\n**In the current month:**\n'
+            message_to_send += '\n'.join(month_bdays)
 
 
-                if message_to_send:
-                    await ctx.send(message_to_send)
-                else:
-                    await ctx.send('There are no birthdays soon.')
-
-                #If the dict has changed, it will happen if someome who stored his bday has left the server and his data is still there.  
-                if server_data_copy != server_data:
-                    bdays_dict[str(ctx.guild.id)] = server_data_copy
-                    with open('./data/birth_days.json', 'w') as f:
-                        json.dump(bdays_dict, f)
-                
-
-            else:
-                await ctx.send('This server does not have stored birthdays use "$set-bday" to store your birthday.')
-
+        if message_to_send:
+            await ctx.send(message_to_send)
         else:
-            await ctx.send('You have to use this command in a channel named "birthdays" (with some emojis if you want 😉). Just to be tidy.')
+            await ctx.send('There are no birthdays soon.')
+
+        #If the dict has changed, it will happen if someome who stored his bday has left the server and his data is still there.  
+        if server_data_copy != server_data:
+            bdays_dict[str(ctx.guild.id)] = server_data_copy
+            with open('./data/birth_days.json', 'w') as f:
+                json.dump(bdays_dict, f)
+        
 
     else:
-        await ctx.message.reply(content='This command only works on servers.')
+        await ctx.send('This server does not have stored birthdays use "$set-bday" to store your birthday.')
 
+
+@next_bdays.error
+async def next_bdays_error_handler(ctx, error):
+    """This function is for handling the errors wich be raised if the $next-bdays command is not used properly.
+    """
+    await ctx.message.reply(content= str(error))
 
 
 
@@ -335,10 +311,15 @@ async def rover_photo_by_date(ctx, *args):
     date_regex = re.compile(r'\d{4}-\d{1,2}-\d{1,2}')
     
     if date_regex.search(date):
-        photo_url = NasaApi().get_rover_photo_by_date(date)
-        await ctx.message.reply(content=photo_url)
+        year, month, day = date.split('-')
+        if CustomChecks.is_valid_date(int(month), int(day), year=int(year)):
+            photo_url = NasaApi().get_rover_photo_by_date(date)
+            await ctx.message.reply(content=photo_url)
+        else:
+            await ctx.message.reply(content='That is an unexistent date.')
+
     else:
-        await ctx.message.reply(content='It is not a date, i\'m not dumb 😑')
+        await ctx.message.reply(content='That is not a date, i\'m not dumb 😑')
 
 
 
