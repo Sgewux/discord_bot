@@ -363,6 +363,7 @@ async def get_h_price(ctx, *args):
     else:
         await ctx.message.reply(content='It is not a date, i\'m not dumb 😑')
 
+#
 
 if __name__ == '__main__':
     bot.run(TOKEN)
