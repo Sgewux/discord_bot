@@ -6,6 +6,7 @@ import dotenv
 import discord
 import asyncio
 import datetime
+from checks import CustomChecks
 from discord.ext import commands
 from bot_utilities.nasa_api import NasaApi
 from bot_utilities.checks import CustomChecks
@@ -151,6 +152,7 @@ async def say_to(ctx, *args):
             dm_channel = await member.create_dm()
             await dm_channel.send(content=f'Hi, **{author}** from **{guild_name}** asked me to tell you **"{message_to_send}"** 🤐')
     else:
+#<<<<<<< HEAD
         await ctx.message.reply(content='You must especify a message and a user to send that message.')
 
 
@@ -197,6 +199,8 @@ async def set_bday(ctx, month: int, day: int):
         json.dump(bdays_dict, f)
 
     await ctx.message.reply(content="Birhtday saved 😉.")
+
+        await ctx.message.reply(content='This command only works on servers.')
 
 
 @set_bday.error
@@ -258,7 +262,6 @@ async def next_bdays(ctx):
         if month_bdays:
             message_to_send += '\n**In the current month:**\n'
             message_to_send += '\n'.join(month_bdays)
-
 
         if message_to_send:
             await ctx.send(message_to_send)
