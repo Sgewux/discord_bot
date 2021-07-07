@@ -6,11 +6,11 @@ import dotenv
 import discord
 import asyncio
 import datetime
+from cogs.space import SpaceCommands
 from discord.ext import commands
-from bot_utilities.nasa_api import NasaApi
-from bot_utilities.checks import CustomChecks
-from bot_utilities.crypto_commands import CryptoCommands
-from bot_utilities.weather_scraper import WeatherScraper
+from cogs.bot_utilities.checks import CustomChecks
+from cogs.bot_utilities.crypto_commands import CryptoCommands
+from cogs.bot_utilities.weather_scraper import WeatherScraper
 
 dotenv.load_dotenv()
 TOKEN = os.getenv('DISCORD_API_TOKEN')
@@ -286,44 +286,6 @@ async def next_bdays_error_handler(ctx, error):
 
 
 #nasa
-@bot.command(pass_context=True, aliases=('APOD', 'apod'))
-async def astro_picture(ctx):
-    apod = NasaApi().get_apod()
-
-    if apod:
-        await ctx.send(f'Description 👨‍🚀:\n {apod[0]}\n {apod[1]}')
-    else:
-        await ctx.send('Something went wrong :(')
-
-
-@bot.command(pass_context=True,  aliases=('MRP', 'mrp'))
-async def rover_photo(ctx):
-    rover_photo = NasaApi().get_mars_rover_photo()
-
-    if rover_photo: 
-        await ctx.message.reply(content=f'{rover_photo[0]}\nThis photo was taken in: {rover_photo[1]}\nCamera name: {rover_photo[2]}') 
-    else:
-        await ctx.message.reply(content='Something went wrong :( \nPlease try again.')
-
-
-@bot.command(pass_context=True, aliases=('MRPD', 'mrpd'))
-async def rover_photo_by_date(ctx, *args):
-    date = '-'.join(args)
-    date_regex = re.compile(r'\d{4}-\d{1,2}-\d{1,2}')
-    
-    if date_regex.search(date):
-        year, month, day = date.split('-')
-        if CustomChecks.is_valid_date(int(month), int(day), year=int(year)):
-            photo_url = NasaApi().get_rover_photo_by_date(date)
-            await ctx.message.reply(content=photo_url)
-        else:
-            await ctx.message.reply(content='That is an unexistent date.')
-
-    else:
-        await ctx.message.reply(content='That is not a date, i\'m not dumb 😑')
-
-
-
 
 #crypto
 @bot.command(pass_context=True, aliases=('cprice', 'CPRICE'))
@@ -368,6 +330,9 @@ async def get_h_price(ctx, *args):
     else:
         await ctx.message.reply(content='It is not a date, i\'m not dumb 😑')
 
+
+
+bot.add_cog(SpaceCommands(bot))
 
 if __name__ == '__main__':
     bot.run(TOKEN)
