@@ -7,9 +7,9 @@ import discord
 import asyncio
 import datetime
 from cogs.space import SpaceCommands
+from cogs.crypto import CryptoCommands
 from discord.ext import commands
 from cogs.bot_utilities.checks import CustomChecks
-from cogs.bot_utilities.crypto_commands import CryptoCommands
 from cogs.bot_utilities.weather_scraper import WeatherScraper
 
 dotenv.load_dotenv()
@@ -52,7 +52,7 @@ async def on_member_remove(member):
     guild = bot.get_guild(member.guild.id)
     user_id = member.id
 
-    with open('./data/members_who_left.json', 'r') as f:
+    with open('./cogs/data/members_who_left.json', 'r') as f:
         members_who_left = json.load(f)
 
     server_data = members_who_left.get(str(guild.id), None)
@@ -286,53 +286,10 @@ async def next_bdays_error_handler(ctx, error):
 
 
 #nasa
-
 #crypto
-@bot.command(pass_context=True, aliases=('cprice', 'CPRICE'))
-async def get_price(ctx, crypto_name, currency_name):
-    currency_name = currency_name.lower()
-    crypto_name = crypto_name.lower()
-    price = CryptoCommands().get_crypto_price(crypto_name, currency_name)
-
-    await ctx.message.reply(content=price)
-
-
-@bot.command(pass_context=True, aliases=('ctc', 'CTC'))
-async def conv_to_crypto(ctx, amount: float, currency_name, crypto_name):
-    currency_name = currency_name.lower()
-    crypto_name = crypto_name.lower()
-    convertion = CryptoCommands().convert_to_crypto(currency_name, crypto_name, amount)
-
-    await ctx.message.reply(content=convertion)
-
-
-@bot.command(pass_context=True, aliases=('cfc', 'CFC'))
-async def conv_from_crypto(ctx, amount: float, crypto_name, currency_name):
-    currency_name = currency_name.lower()
-    crypto_name = crypto_name.lower()
-    convertion = CryptoCommands().convert_from_crypto(crypto_name, currency_name, amount)
-
-    await ctx.message.reply(content=convertion)
-
-
-@bot.command(pass_context=True, aliases=('ghp', 'GHP'))
-async def get_h_price(ctx, *args):
-    date = '-'.join(args)
-    date_regex = re.compile(r'\d{4}-\d{2}-\d{2}')
-
-    if date_regex.search(date):
-        year, month, day = date.split('-')
-        if CustomChecks.is_valid_date(int(month), int(day), year=int(year)):
-            price = CryptoCommands().get_historical_price(date)
-            await ctx.message.reply(content=price)
-        else:
-            await ctx.message.reply(content='It is not a valid date.')
-    else:
-        await ctx.message.reply(content='It is not a date, i\'m not dumb 😑')
-
-
 
 bot.add_cog(SpaceCommands(bot))
+bot.add_cog(CryptoCommands(bot))
 
 if __name__ == '__main__':
     bot.run(TOKEN)
