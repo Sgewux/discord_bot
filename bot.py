@@ -151,7 +151,6 @@ async def say_to(ctx, *args):
             dm_channel = await member.create_dm()
             await dm_channel.send(content=f'Hi, **{author}** from **{guild_name}** asked me to tell you **"{message_to_send}"** 🤐')
     else:
-#<<<<<<< HEAD
         await ctx.message.reply(content='You must especify a message and a user to send that message.')
 
 
@@ -199,14 +198,13 @@ async def set_bday(ctx, month: int, day: int):
 
     await ctx.message.reply(content="Birhtday saved 😉.")
 
-        await ctx.message.reply(content='This command only works on servers.')
-
 
 @set_bday.error
 async def set_bday_error_handler(ctx, error):
     """This function is for handling the errors wich be raised if the $set-bday command is not used properly.
     """
-    await ctx.message.reply(content= str(error))
+    if type(error) != commands.errors.BadArgument:
+        await ctx.message.reply(content= str(error))
 
 
 @bot.command(pass_context=True, aliases=('next-bdays', 'NEXT-BDAYS'))
@@ -282,7 +280,8 @@ async def next_bdays(ctx):
 async def next_bdays_error_handler(ctx, error):
     """This function is for handling the errors wich be raised if the $next-bdays command is not used properly.
     """
-    await ctx.message.reply(content= str(error))
+    if type(error) != commands.errors.BadArgument:
+        await ctx.message.reply(content= str(error))
 
 
 
@@ -357,15 +356,18 @@ async def conv_from_crypto(ctx, amount: float, crypto_name, currency_name):
 @bot.command(pass_context=True, aliases=('ghp', 'GHP'))
 async def get_h_price(ctx, *args):
     date = '-'.join(args)
-    date_regex = re.compile('\d{4}-\d{2}-\d{2}')
+    date_regex = re.compile(r'\d{4}-\d{2}-\d{2}')
 
     if date_regex.search(date):
-        price = CryptoCommands().get_historical_price(date)
-        await ctx.message.reply(content=price)
+        year, month, day = date.split('-')
+        if CustomChecks.is_valid_date(int(month), int(day), year=int(year)):
+            price = CryptoCommands().get_historical_price(date)
+            await ctx.message.reply(content=price)
+        else:
+            await ctx.message.reply(content='It is not a valid date.')
     else:
         await ctx.message.reply(content='It is not a date, i\'m not dumb 😑')
 
-#
 
 if __name__ == '__main__':
     bot.run(TOKEN)
