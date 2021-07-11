@@ -8,6 +8,7 @@ import asyncio
 import datetime
 from cogs.space import SpaceCommands
 from cogs.crypto import CryptoCommands
+from cogs.general import GeneralCommands
 from discord.ext import commands
 from cogs.bot_utilities.checks import CustomChecks
 from cogs.bot_utilities.weather_scraper import WeatherScraper
@@ -109,23 +110,6 @@ async def help(ctx):
     await ctx.message.reply(content=message_to_be_sent)
 
 
-@bot.command(pass_context=True, aliases=('weather', 'WEATHER'))
-async def get_weather(ctx, *place):
-    place = ''.join(place)
-    await ctx.message.reply(content=f'Weather in {place} is currently: {WeatherScraper(place).get_temperature_and_weather()}')
-
-
-@bot.command(pass_context=True, aliases=('HMD', 'hmd'))
-async def time_belonging(ctx):
-    if type(ctx.author) == discord.member.Member:
-        join_date = ctx.author.joined_at
-        current_date = datetime.datetime.now()
-        delta = current_date - join_date
-        await ctx.message.reply(content=f'You\'ve been on this server for {delta.days} days!')
-    else:
-        return None
-
-
 @bot.command(pass_context=True, aliases=('sayto', 'SAYTO'))
 @commands.check(CustomChecks.is_guild)
 async def say_to(ctx, *args):
@@ -159,52 +143,6 @@ async def say_to_error_handler(ctx, error):
     """This function is for handling the errors wich will be raised if the $sayto command is not used propery.
     """
     await ctx.message.repy(content=str(error))
-
-
-@bot.command(pass_context=True, aliases=('set-bday', 'SET-BDAY'))
-@commands.check(CustomChecks.is_guild)
-@commands.check(CustomChecks.is_bdays_channel)
-async def set_bday(ctx, month: int, day: int):
-
-    guild_id = str(ctx.guild.id)
-    user_id = str(ctx.author.id)
-
-    with open('./data/birth_days.json', 'r') as f:
-        bdays_dict = json.load(f)
-
-    try:
-        server_bdays = bdays_dict[guild_id]
-
-        if CustomChecks.is_valid_date(month, day):
-            server_bdays[user_id] = (month, day)
-        
-        else:
-            await ctx.message.reply(content="Please enter a valid date.")
-            return None
-
-    except KeyError:
-        bdays_dict[guild_id] = {}
-        server_bdays = bdays_dict[guild_id]
-
-        if CustomChecks.is_valid_date(month, day):
-            server_bdays[user_id] = (month, day)
-
-        else:
-            await ctx.message.reply(content="Please enter a valid date.")
-            return None
-
-    with open('./data/birth_days.json', 'w') as f:
-        json.dump(bdays_dict, f)
-
-    await ctx.message.reply(content="Birhtday saved 😉.")
-
-
-@set_bday.error
-async def set_bday_error_handler(ctx, error):
-    """This function is for handling the errors wich be raised if the $set-bday command is not used properly.
-    """
-    if type(error) != commands.errors.BadArgument:
-        await ctx.message.reply(content= str(error))
 
 
 @bot.command(pass_context=True, aliases=('next-bdays', 'NEXT-BDAYS'))
@@ -290,6 +228,7 @@ async def next_bdays_error_handler(ctx, error):
 
 bot.add_cog(SpaceCommands(bot))
 bot.add_cog(CryptoCommands(bot))
+bot.add_cog(GeneralCommands(bot))
 
 if __name__ == '__main__':
     bot.run(TOKEN)

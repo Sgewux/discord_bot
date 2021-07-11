@@ -12,7 +12,7 @@ class SpaceCommands(commands.Cog):
 
 	@commands.command(pass_context=True, aliases=('APOD', 'apod'))
 	async def astronomy_picture_of_the_day(self, ctx):
-		"""Gives us the astronomy picture of the day"""
+		"""Gives to the user the astronomy picture of the day"""
 		apod = self._api.get_apod()
 
 		if apod:
@@ -22,7 +22,7 @@ class SpaceCommands(commands.Cog):
 
 	@commands.command(pass_context=True,  aliases=('MRP', 'mrp'))
 	async def rover_photo(self, ctx):
-		"""Gives us a random photo taken by the mars rover"""
+		"""Gives to the user a random photo taken by the mars rover"""
 
 		rover_photo = self._api.get_mars_rover_photo()
 
@@ -33,6 +33,7 @@ class SpaceCommands(commands.Cog):
 
 	@commands.command(pass_context=True, aliases=('MRPD', 'mrpd'))
 	async def rover_photo_by_date(self, ctx, *args):
+		"""Gives to the user a photo taken by the mars rover on a given date"""
 		date = '-'.join(args)
 		date_regex = re.compile(r'\d{4}-\d{1,2}-\d{1,2}')
 
